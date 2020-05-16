@@ -1,5 +1,5 @@
 # ParallelConvexHull
-Specifications of the CPU used for the computations 
+Quick Hull parallel algorithm for Parallel Convex Hull computation using OpenMP.  
   ## CPU Specifications
   * Architecture: x86_64
   * CPU op-mode(s): 32-bit, 64-bit
