@@ -12,8 +12,14 @@ Specifications of the CPU used for the computations
   * Model: 142
   * Model name: Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz
   * NUMA node0 CPU(s): 0-7
-![alt text](http://url/to/img.png)
+  
+  ![alt text](https://github.com/aman33459/ParallelConvexHull/blob/master/images/Screenshot%20from%202019-11-12%2020-55-16.png)
+  
+  ![alt text](https://github.com/aman33459/ParallelConvexHull/blob/master/images/Screenshot%20from%202019-11-12%2020-55-27.png)
+  
+  ![alt text](https://github.com/aman33459/ParallelConvexHull/blob/master/images/Screenshot%20from%202019-11-12%2020-56-23.png)
 
+  ![alt text](https://github.com/aman33459/ParallelConvexHull/blob/master/images/Screenshot%20from%202019-11-12%2020-56-36.png)
  ## Speed Comparision:
  
    Number of Points | PARALLEL RUNNING TIME(in seconds) | SEQUENTIAL RUNNING TIME(in seconds)
