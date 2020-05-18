@@ -48,6 +48,7 @@ pair < int ,  int >  parallel_max_min(vector < Points > &P, int n){
 		} 
 	}
 	int a1 = max_x[0],a2 = min_x[0];
+	cout << "done\n";
 	///for(int i  = 0 ; i < NUMTHREADS ; i++ ) cout << max_x[i] << " " << min_x[i] << "--\n";
  	for(int i =0 ; i < NUMTHREADS ; i++){
  		//cout << P[max_x[i]].a << " " << P[a1].a << " " << a1 << "++\n";
@@ -78,16 +79,13 @@ int lineDist(Points p1, Points p2, Points p)
     return abs ((p.b - p1.b) * (p2.a - p1.a) - 
                (p2.b - p1.b) * (p.a - p1.a)); 
 }
-vector < Points > ans;
-int ind[10];
-int max_dist[10];
-void quickHull(vector < Points > &P   , int n , Points l ,Points r , int side){
 
-	for(int i = 0; i < NUMTHREADS ; i++) {
-		max_dist[i]=0;
-		ind[i]=-1;
-	}
-	//cout << "ok till now\n" << " " << omp_get_num_threads() << "------\n";
+
+void quickHull(vector < Points > &P   , int n , Points l ,Points r , int side , vector < Points > & ans){
+	
+	int max_dist = 0;
+	int ind = -1;
+	
 	#pragma omp parallel shared(ind,max_dist,P,side,l,r,n)
 	{
 		#pragma omp for schedule(dynamic) 
@@ -96,73 +94,43 @@ void quickHull(vector < Points > &P   , int n , Points l ,Points r , int side){
 		    	int tno = omp_get_thread_num();
 		        int temp = lineDist(l, r, P[i]);
 		        int k =  findSide(l ,  r, P[i]);
-		        if(k == side && temp > max_dist[tno]){
-		        	max_dist[tno]=temp;
-		        	ind[tno] = i;
+		        if(k == side && temp > max_dist){
+		        	max_dist=temp;
+		        	ind = i;
 		        }
-		        /*#pragma omp critical
-		        {
-		        	if( k == side && temp > max_dist) 
-			        { 
-			            ind = i; 
-			            max_dist = temp; 
-			        }
-		    	}*/
-		    } 
+	    } 
 	}
-	//cout << "something went wrong\n";
-	int f = 1;
-	int m = 0;
-	int indfinal = ind[0];
-	for(int i = 0; i < NUMTHREADS ; i++) {
-        if(max_dist[m] < max_dist[i]){
-        	m= i;
-        	indfinal = ind[i];
-        }
-	}
-	if(indfinal == -1) 
+	if(ind == -1) 
 	 {
-	 	///cout << omp_get_thread_num() << "++\n"; 
-        ans.push_back(l); 
-        ans.push_back(r); 
+	 	ans.push_back(l);
+	 	ans.push_back(r);
         ///cout << l.a << " " << l.b << " " << r.a << " " << r.b << "++\n";
         return; 
 	 }
-    #pragma omp parallel shared(ans)
- 	 {
-  		#pragma omp sections
-  		{
-  				#pragma omp section
-  				{
-  					quickHull(P, n, P[indfinal], l, -findSide(P[indfinal], l, r)); 
-				}
-				#pragma omp section
-				{
-					quickHull(P, n, P[indfinal], r, -findSide(P[indfinal], r, l));
-				}
-		}
-	} 
+ #pragma omp task shared(ans)
+    {
+    	quickHull(P, n, P[ind], l, -findSide(P[ind], l, r),ans); 
+	}
+	#pragma omp task shared(ans)
+    {
+    	quickHull(P, n, P[ind], r, -findSide(P[ind], r, l),ans);
+	}
 	return;
 }
-void hullInternal(vector < Points > &P, int n) {
+vector < Points >  hullInternal(vector < Points > &P, int n) {
   pair<int , int > minMax = parallel_max_min(P,n);
   int l = minMax.first;
   int r = minMax.second;
-  #pragma omp parallel shared(ans)
-  {
-  		#pragma omp sections
-  		{
-  				#pragma omp section
-  				{
-  					quickHull(P,n,P[l],P[r],1);
-				}
-				#pragma omp section
-				{
-					quickHull(P,n,P[l],P[r],-1);
-				}
-		}
-	} 
-	//return ans;
+  vector < Points > ans;
+	#pragma omp task
+	{
+			quickHull(P,n,P[l],P[r],1,ans);
+	}
+	#pragma omp task
+	{
+		quickHull(P,n,P[l],P[r],-1,ans);
+	}
+	return ans;
 }
 vector < Points > point;
 using namespace std::chrono; 
@@ -179,13 +147,16 @@ int main(){
 		ok.b=tmp2;
 		point.push_back(ok);
 	}
-	hullInternal(point,n);
+	vector < Points > ans = hullInternal(point,n);
 	 auto stop = high_resolution_clock::now(); 
 	 auto duration = duration_cast<microseconds>(stop - start);
-	 
-	/*for(auto i: ans) {
-		cout << i.a << " " << i.b << "***\n";
+/*	for(int tno = 0 ; tno < NUMTHREADS ; tno++){
+			for(auto i: ans[tno]) {
+			cout << i.a << " " << i.b << "***\n";
+		}	
 	}*/
+	 //for()
+	
 	 cout << "Time taken by function: "
          << duration.count() << " microseconds\n";
 	return 0;
