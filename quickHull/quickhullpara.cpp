@@ -8,6 +8,7 @@ public:
 #define CHUNKSIZE 100
 #define NUMTHREADS 10
 int min_x[10],max_x[10];
+#define DEPTH 10
 pair < int ,  int >  parallel_max_min(vector < Points > &P, int n){
 	omp_set_num_threads(NUMTHREADS);
 	int i;
@@ -79,10 +80,41 @@ int lineDist(Points p1, Points p2, Points p)
     return abs ((p.b - p1.b) * (p2.a - p1.a) - 
                (p2.b - p1.b) * (p.a - p1.a)); 
 }
+void serialHull(vector < Points > &P   , int n , Points l ,Points r , int side , vector < Points > &ans){
+	int ind =-1;
+	int max_dist = 0; 
+	for(int i=0; i<n; i++) 
+    { 
+        int temp = lineDist(l, r, P[i]);
+        int k =  findSide(l ,  r, P[i]);
+        
+        	if( k == side && temp > max_dist) 
+	        { 
+	            ind = i; 
+	            max_dist = temp; 
+	        }
+	}	    	
+	//cout << l.a << " " << l.b << "++\n";
+	if (ind == -1) 
+	 {
+	 	///cout << omp_get_thread_num() << "++\n"; 
+       	ans.push_back(l); 
+        ans.push_back(r); 
+        ///cout << l.a << " " << l.b << " " << r.a << " " << r.b << "++\n";
+        return; 
+	 }
 
+	serialHull(P, n, P[ind], l, -findSide(P[ind], l, r),ans); 
+	serialHull(P, n, P[ind], r, -findSide(P[ind], r, l),ans);
+ 
+	return;
+}
 
-void quickHull(vector < Points > &P   , int n , Points l ,Points r , int side , vector < Points > & ans){
-	
+void quickHull(vector < Points > &P   , int n , Points l ,Points r , int side , vector < Points > & ans , int depth){
+	if(depth  == 0) 
+	{
+			serialHull(P,n,l,r,side , ans);
+	}
 	int max_dist = 0;
 	int ind = -1;
 	
@@ -109,11 +141,11 @@ void quickHull(vector < Points > &P   , int n , Points l ,Points r , int side , 
 	 }
  #pragma omp task shared(ans)
     {
-    	quickHull(P, n, P[ind], l, -findSide(P[ind], l, r),ans); 
+    	quickHull(P, n, P[ind], l, -findSide(P[ind], l, r),ans,depth-1); 
 	}
 	#pragma omp task shared(ans)
     {
-    	quickHull(P, n, P[ind], r, -findSide(P[ind], r, l),ans);
+    	quickHull(P, n, P[ind], r, -findSide(P[ind], r, l),ans,depth-1);
 	}
 	return;
 }
@@ -124,11 +156,11 @@ vector < Points >  hullInternal(vector < Points > &P, int n) {
   vector < Points > ans;
 	#pragma omp task
 	{
-			quickHull(P,n,P[l],P[r],1,ans);
+			quickHull(P,n,P[l],P[r],1,ans,DEPTH);
 	}
 	#pragma omp task
 	{
-		quickHull(P,n,P[l],P[r],-1,ans);
+		quickHull(P,n,P[l],P[r],-1,ans,DEPTH);
 	}
 	return ans;
 }

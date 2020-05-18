@@ -7,11 +7,11 @@ long long rand(long long a, long long b) {
 }
 int main(int argc, char* argv[]) {
     srand(atoi(argv[1]));
-    int t= rand(1,100);
+    int t= rand(1,10000000);
     cout << t << "\n";
     while(t--){
-        int x = rand(1,20000);
-        int y = rand(1,20000);
+        int x = rand(-100,100);
+        int y = rand(-100,100);
         cout << x  << " " << y << "\n";   
         }
       	//cout << "\n";
