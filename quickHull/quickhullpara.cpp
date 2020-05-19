@@ -49,7 +49,7 @@ pair < int ,  int >  parallel_max_min(vector < Points > &P, int n){
 		} 
 	}
 	int a1 = max_x[0],a2 = min_x[0];
-	cout << "done\n";
+	///cout << "done\n";
 	///for(int i  = 0 ; i < NUMTHREADS ; i++ ) cout << max_x[i] << " " << min_x[i] << "--\n";
  	for(int i =0 ; i < NUMTHREADS ; i++){
  		//cout << P[max_x[i]].a << " " << P[a1].a << " " << a1 << "++\n";
@@ -63,7 +63,7 @@ pair < int ,  int >  parallel_max_min(vector < Points > &P, int n){
 	//cout << a2 << " " << a1 << "++\n";
 	return  {a2, a1};
 }
-int findSide(Points p1, Points p2, Points p) 
+inline int findSide(Points p1, Points p2, Points p) 
 { 
     int val = (p.b - p1.b) * (p2.a - p1.a) - 
               (p2.b - p1.b) * (p.a - p1.a); 
@@ -75,7 +75,7 @@ int findSide(Points p1, Points p2, Points p)
     return 0; 
 } 
   
-int lineDist(Points p1, Points p2, Points p) 
+inline int lineDist(Points p1, Points p2, Points p) 
 { 
     return abs ((p.b - p1.b) * (p2.a - p1.a) - 
                (p2.b - p1.b) * (p.a - p1.a)); 
@@ -139,14 +139,25 @@ void quickHull(vector < Points > &P   , int n , Points l ,Points r , int side , 
         ///cout << l.a << " " << l.b << " " << r.a << " " << r.b << "++\n";
         return; 
 	 }
- #pragma omp task shared(ans)
+ 	#pragma omp parallel 
+	{
+    #pragma omp sections
     {
+        #pragma omp section
+        {
+	
     	quickHull(P, n, P[ind], l, -findSide(P[ind], l, r),ans,depth-1); 
-	}
-	#pragma omp task shared(ans)
+	}}}
+	#pragma omp parallel 
+	{
+    #pragma omp sections
     {
+        #pragma omp section
+        {
+	
     	quickHull(P, n, P[ind], r, -findSide(P[ind], r, l),ans,depth-1);
 	}
+	}}
 	return;
 }
 vector < Points >  hullInternal(vector < Points > &P, int n) {
@@ -154,13 +165,26 @@ vector < Points >  hullInternal(vector < Points > &P, int n) {
   int l = minMax.first;
   int r = minMax.second;
   vector < Points > ans;
-	#pragma omp task
+	#pragma omp parallel 
 	{
+    #pragma omp sections
+    {
+        #pragma omp section
+        {
 			quickHull(P,n,P[l],P[r],1,ans,DEPTH);
+		}
 	}
-	#pragma omp task
+	}
+	#pragma omp parallel 
 	{
-		quickHull(P,n,P[l],P[r],-1,ans,DEPTH);
+    #pragma omp sections
+    {
+        #pragma omp section
+        {
+			quickHull(P,n,P[l],P[r],-1,ans,DEPTH);
+		}
+	}
+	
 	}
 	return ans;
 }
@@ -179,7 +203,10 @@ int main(){
 		ok.b=tmp2;
 		point.push_back(ok);
 	}
+
 	vector < Points > ans = hullInternal(point,n);
+	cout << "parallel program--\n";
+
 	 auto stop = high_resolution_clock::now(); 
 	 auto duration = duration_cast<microseconds>(stop - start);
 /*	for(int tno = 0 ; tno < NUMTHREADS ; tno++){

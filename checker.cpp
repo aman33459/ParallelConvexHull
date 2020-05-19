@@ -7,7 +7,7 @@ long long rand(long long a, long long b) {
 }
 int main(int argc, char* argv[]) {
     srand(atoi(argv[1]));
-    int t= rand(1,10000000);
+    int t= rand(1,1000000);
     cout << t << "\n";
     while(t--){
         int x = rand(-100,100);

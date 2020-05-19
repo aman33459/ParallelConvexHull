@@ -55,7 +55,7 @@ void quickHull(vector < Points > &P   , int n , Points l ,Points r , int side){
 	            max_dist = temp; 
 	        }
 	}	    	
-	cout << l.a << " " << l.b << "++\n";
+	//cout << l.a << " " << l.b << "++\n";
 	if (ind == -1) 
 	 {
 	 	///cout << omp_get_thread_num() << "++\n"; 
@@ -93,7 +93,7 @@ int main(){
 		point.push_back(ok);
 	}
 
-	 cout << "ok\n";
+	 cout << "serial program--\n";
 	hullInternal(point,n);
 	 auto stop = high_resolution_clock::now(); 
 	 auto duration = duration_cast<microseconds>(stop - start);
