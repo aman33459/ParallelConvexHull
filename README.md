@@ -1,5 +1,6 @@
 # ParallelConvexHull
-Quick Hull parallel algorithm for Parallel Convex Hull computation using OpenMP.  
+Quick Hull parallel algorithm for Parallel Convex Hull computation using OpenMP. 
+To exectue download or clone the repository and then run **make** to create the executables in the working directory. To run tests run **make runTests**.
   ## CPU Specifications
   * Architecture: x86_64
   * CPU op-mode(s): 32-bit, 64-bit
